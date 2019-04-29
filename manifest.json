@@ -1,0 +1,21 @@
+{
+    "name": "9gag Downloader",
+    "version": "1.0",
+    "description": "TODO",
+    "permissions": ["activeTab", "declarativeContent", "storage", "tabs", "https://9gag.com/*"],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "page_action": {
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://9gag.com/*"],
+            "js": ["jquery-3.3.1.min.js", "download.js"],
+            "run_at": "document_end"
+        }
+    ],
+    "manifest_version": 2
+}
