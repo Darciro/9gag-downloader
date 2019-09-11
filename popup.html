@@ -2,17 +2,54 @@
 <html>
 <head>
 	<style>
+		@font-face {
+			font-family: 'Futura PT';
+			src: local('Futura PT Bold'), local('FuturaPT-Bold'),
+			url('assets/fonts/FuturaPT-Bold.woff2') format('woff2'),
+			url('assets/fonts/FuturaPT-Bold.woff') format('woff'),
+			url('assets/fonts/FuturaPT-Bold.ttf') format('truetype');
+			font-weight: bold;
+			font-style: normal;
+		}
+
+		@font-face {
+			font-family: 'Futura PT';
+			src: local('Futura PT Light'), local('FuturaPT-Light'),
+			url('assets/fonts/FuturaPT-Light.woff2') format('woff2'),
+			url('assets/fonts/FuturaPT-Light.woff') format('woff'),
+			url('assets/fonts/FuturaPT-Light.ttf') format('truetype');
+			font-weight: 300;
+			font-style: normal;
+		}
+		body {
+			width: 250px;
+			padding: 15px;
+			background-color: #fafafa;
+			text-align: center;
+			font-family: 'Futura PT';
+		}
 		button {
 			height: 45px;
 			width: 60px;
 			outline: none;
+			background: #6200ee;
+			box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0,0,0,.12);
+			transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
+			border: none;
+			cursor: pointer;
 		}
 	</style>
 </head>
 <body>
-
-	<button id="changeColor"><img src="9gag-icon.png" height="30" width="30"></button>
-
+	<h1>9GAG Downloader</h1>
+	<h2 id="post-title">Post title: How programming works2</h2>
+	<p>Click the button below to start your download</p>
+	<div>
+		<button id="9gag-download-btn">
+			<img src="assets/images/Download-icon-32.png">
+		</button>
+	</div>
+	<p class="text-center"><a href="http://galdar.com.br/" target="_blank">Galdar Tecnologia</a>
 	<script src="jquery-3.3.1.min.js"></script>
 	<script src="popup.js"></script>
 </body>

@@ -1,6 +1,6 @@
 (function($) {
 	$(document).ready(function() {
-		chrome.runtime.onMessage.addListener(function(message) {
+		chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 			// Source: http://pixelscommander.com/en/javascript/javascript-file-download-ignore-content-type/
 			window.downloadFile = function (sUrl) {
@@ -46,7 +46,12 @@
 			window.downloadFile.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 			window.downloadFile.isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
 
-			if( message.downloadFrom9Gag ){
+			if( request.getDataFrom9Gag ){
+				sendResponse({postPitle: $('section#individual-post header h1').text()});
+			}
+
+			if( request.downloadFrom9Gag ){
+				console.log('downloadFrom9Gag');
 				if( $('#container .post-container video').length ){
 					var sourceMP4 = $('#container .post-container video source:eq(1)');
 					// window.open( sourceMP4.attr('src'), '_blank' );
@@ -57,8 +62,10 @@
 					downloadFile( sourceJPG.attr('src') );
 				}
 
-				$('body').addClass('p3');
+				$('body').addClass('9gag-downloader');
+				return true;
 			}
+
 		})
 
 	});
