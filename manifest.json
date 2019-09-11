@@ -1,7 +1,7 @@
 {
   "name": "9gag Downloader",
   "version": "1.0",
-  "description": "TODO",
+  "description": "Extension to assist in sharing memes through the best humorous website 9GAG",
   "permissions": [
     "activeTab",
     "declarativeContent",
