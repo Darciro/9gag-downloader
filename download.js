@@ -1,82 +1,88 @@
-(function ($) {
-    $(document).ready(function () {
-        chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+// Wrap in an IIFE to avoid polluting global scope
+(() => {
+  // Listen for messages from popup or background
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.getDataFrom9Gag) {
+      let titleEl, videoSources, imgSources;
 
-            // Source: http://pixelscommander.com/en/javascript/javascript-file-download-ignore-content-type/
-            window.downloadFile = function (sUrl) {
+      if (document.getElementById("individual-post")) {
+        titleEl = document.querySelector("section#individual-post header h1");
+        videoSources = Array.from(
+          document.querySelectorAll("#individual-post article video source")
+        )
+          .map((el) => el.src)
+          .filter(Boolean);
+        imgSources = Array.from(
+          document.querySelectorAll("#individual-post article picture img")
+        )
+          .map((el) => el.src)
+          .filter(Boolean);
+      } else {
+        const items = Array.from(
+          document.querySelectorAll("#container section article")
+        );
+        let firstVisible = null;
 
-                //iOS devices do not support downloading. We have to inform user about this.
-                if (/(iP)/g.test(navigator.userAgent)) {
-                    //alert('Your device does not support files downloading. Please try again in desktop browser.');
-                    window.open(sUrl, '_blank');
-                    return false;
-                }
+        function updateFirstVisible() {
+          // Filter items whose bounding rect intersects the viewport
+          const visibleItems = items.filter((el) => {
+            const rect = el.getBoundingClientRect();
+            return rect.top >= 0 && rect.bottom > 0;
+          });
 
-                //If in Chrome or Safari - download via virtual link click
-                if (window.downloadFile.isChrome || window.downloadFile.isSafari) {
-                    //Creating new link node.
-                    var link = document.createElement('a');
-                    link.href = sUrl;
-                    link.setAttribute('target', '_blank');
-
-                    if (link.download !== undefined) {
-                        //Set HTML5 download attribute. This will prevent file from opening if supported.
-                        var fileName = sUrl.substring(sUrl.lastIndexOf('/') + 1, sUrl.length);
-                        link.download = fileName;
-                    }
-
-                    //Dispatching click event.
-                    if (document.createEvent) {
-                        var e = document.createEvent('MouseEvents');
-                        e.initEvent('click', true, true);
-                        link.dispatchEvent(e);
-                        return true;
-                    }
-                }
-
-                // Force file download (whether supported by server).
-                if (sUrl.indexOf('?') === -1) {
-                    sUrl += '?download';
-                }
-
-                window.open(sUrl, '_blank');
-                return true;
-            };
-
-            window.downloadFile.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-            window.downloadFile.isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
-
-            if (request.getDataFrom9Gag) {
-                var $videoContainerSources = $('#container .post-container video source'),
-                    videoContainerSourcesArray = [];
-
-                for (var i = 0; i < $videoContainerSources.length; i++) {
-                    videoContainerSourcesArray.push($videoContainerSources.eq(i).attr('src'))
-                }
-
-                sendResponse({
-                    postPitle: $('section#individual-post header h1').text(),
-                    postVideos: videoContainerSourcesArray,
-                });
+          if (visibleItems.length) {
+            // Sort by nearest to the top of viewport
+            visibleItems.sort(
+              (a, b) =>
+                a.getBoundingClientRect().top - b.getBoundingClientRect().top
+            );
+            const newFirst = visibleItems[0];
+            if (newFirst !== firstVisible) {
+              firstVisible = newFirst;
+              document
+                .querySelectorAll(".item--active")
+                .forEach((el) => el.classList.remove("item--active"));
+              firstVisible.classList.add("item--active");
             }
+          }
+        }
 
-            if (request.downloadFrom9Gag) {
-                // console.log('downloadFrom9Gag', request);
-                var $videoContainer = $('#container .post-container video'),
-                    $pictureContainer = $('#container .post-container picture');
+        // Listen for scroll events
+        window.addEventListener("scroll", () => {
+          window.requestAnimationFrame(updateFirstVisible); // throttle with rAF :contentReference[oaicite:9]{index=9}
+        });
 
-                if ($videoContainer.length) {
-                    downloadFile(request.selectedSource);
-                } else if ($pictureContainer.length) {
-                    var sourceJPG = $pictureContainer.find('img');
-                    downloadFile(sourceJPG.attr('src'));
-                }
+        // Run once on load
+        updateFirstVisible();
 
-                $('body').addClass('9gag-downloader');
-                return true;
-            }
+        videoSources = Array.from(
+          document.querySelectorAll(".item--active video source")
+        )
+          .map((el) => el.src)
+          .filter(Boolean);
 
-        })
+        titleEl = document.querySelector(".item--active h2");
+        imgSources = Array.from(
+          document.querySelectorAll("#container .post-container picture img")
+        )
+          .map((el) => el.src)
+          .filter(Boolean);
+      }
 
-    });
-})(jQuery);
+      sendResponse({
+        postPitle: titleEl?.textContent.trim() || "",
+        postVideos: videoSources,
+        postImages: imgSources,
+      });
+
+      return true; // Keeps the channel open, safe even for sync responses
+    }
+
+    if (request.downloadFrom9Gag) {
+      const url = request.selectedSource;
+      chrome.runtime.sendMessage({ action: "download", url });
+      document.body.classList.add("9gag-downloader");
+      return true; // keep message channel open if needed
+    }
+  });
+})();

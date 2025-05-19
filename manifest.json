@@ -1,21 +1,23 @@
 {
   "name": "9gag Downloader",
-  "version": "1.1",
-  "description": "Extension to assist in sharing memes through the best humorous website 9GAG",
+  "version": "2.0",
+  "description": "Download images and video memes from 9GAG",
+  "manifest_version": 3,
   "permissions": [
     "activeTab",
-    "declarativeContent",
     "storage",
     "tabs",
-    "https://9gag.com/*"
+    "declarativeContent",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://9gag.com/*",
+    "https://*.9cache.com/*"
   ],
   "background": {
-    "scripts": [
-      "background.js"
-    ],
-    "persistent": false
+    "service_worker": "background.js"
   },
-  "page_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "assets/images/9gag-icon-16.png",
@@ -27,15 +29,12 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://9gag.com/*"
-      ],
-      "js": [
-        "jquery-3.3.1.min.js",
-        "download.js"
-      ],
+      "matches": ["https://9gag.com/*"],
+      "js": ["download.js"],
       "run_at": "document_end"
     }
   ],
-  "manifest_version": 2
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
 }

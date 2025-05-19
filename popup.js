@@ -1,40 +1,45 @@
-$('#9gag-download-btn').click(function () {
-    var selectedSource = $('#video-format-selector').val();
-
-    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {downloadFrom9Gag: true, selectedSource: selectedSource});
+// 1. Download button click
+document.getElementById("9gag-download-btn").addEventListener("click", () => {
+  const selectedSource = document.getElementById("video-format-selector").value;
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, {
+      downloadFrom9Gag: true,
+      selectedSource,
     });
+  });
 });
 
-chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, {getDataFrom9Gag: true}, function (response) {
-
-        console.log(response);
-
-        var $postTitle = $('#post-title'),
-            $formatSelector = $('#video-format-selector');
-
-        function getUrlExtension(url) {
-            return url.split(/[#?]/)[0].split('.').pop().trim();
-        }
-
-        if (response.postVideos.length) {
-            var sources = $.unique(response.postVideos);
-
-            $formatSelector.html('');
-            for (var i = 0; i < sources.length; i++) {
-                $formatSelector.append($('<option>', {
-                    value: sources[i],
-                    text: getUrlExtension(sources[i])
-                }));
-            }
-        } else {
-            $('#video-format-wrapper').hide();
-        }
-
-        $postTitle.text('');
-
-        if (response.postPitle)
-            $postTitle.text(response.postPitle);
+// 2. On popup load: request data from content script
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Get the active tab
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
     });
+    if (!tab?.id) throw new Error("No active tab found");
+
+    // Send message and await response
+    const response = await chrome.tabs.sendMessage(tab.id, {
+      getDataFrom9Gag: true,
+    });
+
+    // Set the post title safely
+    document.getElementById("post-title").textContent =
+      response.postPitle || "";
+
+    // Populate your format selector
+    const formatSelector = document.getElementById("video-format-selector");
+    formatSelector.innerHTML = "";
+    new Set(
+      response.postVideos.length ? response.postVideos : response.postImages
+    ).forEach((src) => {
+      const opt = document.createElement("option");
+      opt.value = src;
+      opt.textContent = src.split(/[#?]/)[0].split(".").pop().trim();
+      formatSelector.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to fetch 9GAG data:", err);
+  }
 });
