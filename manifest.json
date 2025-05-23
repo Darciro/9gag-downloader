@@ -1,13 +1,10 @@
 {
   "name": "9gag Downloader",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Download images and video memes from 9GAG",
   "manifest_version": 3,
   "permissions": [
     "activeTab",
-    "storage",
-    "tabs",
-    "declarativeContent",
     "downloads"
   ],
   "host_permissions": [
